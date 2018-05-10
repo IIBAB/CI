@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<project name="Building WMB/IIB bar file" default="run">
+	<target name="run" description="">
+		<property file="/opt/scripts/ant.properties" />
+		<antcall target="mqsicreatebar.buildbar" />
+		<delete dir="${build.dir}" />
+		<antcall target="mqsiapplybaroverride.modifybar" />
+		<antcall target="mqsideploy.deploybar" />
+	</target>
+ 
+	<!--
+	    Target to build the broker archive using mqsicreatebar
+	-->
+	<target name="mqsicreatebar.buildbar">
+		<echo message="Building the IIB archive bar file: ${bar.name} " />
+		<mkdir dir="${build.dir}" />
+		<copy todir="${build.dir}">
+			<fileset dir="${workspace.dir}" excludes="*.xml"/>		
+		</copy>
+		<exec executable="mqsicreatebar" spawn="false">
+			<arg value="-data" />
+			<arg value="${build.dir}" />
+			<arg value="-b" />
+			<arg value="${bar.name}" />
+			<arg value="-a" />
+			<arg value="${application.name}" />
+		</exec>
+		<echo message="Completed building WMB/IIB Archive bar file: ${bar.name} " />
+	</target>
+
+	<!--
+	    Target to modify the broker archive using mqsiapplybaroverride
+	-->
+	<target name="mqsiapplybaroverride.modifybar">
+		<echo message="Applying overrides in the IIB archive bar file: ${bar.name} " />
+		<exec executable="mqsiapplybaroverride" spawn="false">
+			<arg value="-b" />
+			<arg value="${bar.name}" />
+			<arg value="-k" />
+			<arg value="${application.name}" />
+			<arg value="-p" />
+			<arg value="${bar.properties.name}" />
+		</exec>
+		<echo message="Completed applying overrides the IIB archive bar file: ${bar.name} " />
+	</target>
+
+	<!--
+	    Target to deploy the broker archive using mqsideploy
+	-->
+	<target name="mqsideploy.deploybar">
+		<echo message="Deploying the IIB archive bar file: ${bar.name} " />
+		<exec executable="mqsideploy" spawn="false">
+			<arg value="${integrationnode.name}" />
+			<arg value="-e" />
+			<arg value="${integrationserver.name}" />
+			<arg value="-a" />
+			<arg value="${bar.name}" />
+		</exec>
+		<echo message="Completed deploying the IIB archive bar file: ${bar.name} " />
+	</target>
+</project>
